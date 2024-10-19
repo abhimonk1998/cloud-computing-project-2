@@ -36,10 +36,30 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Deploy to EC2
-        run: |
-          ssh -i ${{ secrets.EC2_PRIVATE_KEY }} ec2-user@ec2-18-207-11-106.compute-1.amazonaws.com \
-          "docker pull abhimonk1998/web-tier:latest && \
-          docker stop app || true && \
-          docker rm app || true && \
-          docker run -d -p 80:3000 --name app abhimonk1998/web-tier:latest"
+      - name: Deploy with SSH (Debug Enabled)
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            echo "Pulling Docker images..."
+            docker pull abhimonk1998/web-tier:latest
+
+            echo "Stopping and removing existing containers..."
+            docker stop web-tier || true
+            docker rm web-tier || true
+
+            echo "Creating Docker network..."
+            docker network create my-network || true
+
+            echo "Starting web-tier container..."
+            docker run -d --name web-tier --network my-network \
+              -p 80:3000 \
+              -v /path/to/data:/app/data \
+              -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+              -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+              -e AWS_REGION=${{ secrets.AWS_REGION }} \
+              ${{ secrets.DOCKER_USERNAME }}/web-tier:latest
+
+          debug: true
