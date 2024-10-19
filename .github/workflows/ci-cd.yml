@@ -27,8 +27,8 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/web-tier:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/web-tier:latest
+          docker build -t abhimonk1998/web-tier:latest
+          docker push abhimonk1998/web-tier:latest
 
   deploy:
     runs-on: ubuntu-latest
