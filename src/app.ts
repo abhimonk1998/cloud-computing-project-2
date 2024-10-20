@@ -196,7 +196,7 @@ app.post(
           new ReceiveMessageCommand({
             QueueUrl: RESPONSE_QUEUE_URL,
             MaxNumberOfMessages: 10,
-            WaitTimeSeconds: 1,
+            WaitTimeSeconds: 60,
           })
         );
 
@@ -239,5 +239,5 @@ app.post(
 // Start the web server
 app.listen(port, () => {
   console.log(`Web tier listening at http://localhost:${port}`);
-  setInterval(scaleAppTier, 30000);
+  setInterval(scaleAppTier, 5000);
 });
