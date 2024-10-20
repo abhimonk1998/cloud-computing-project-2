@@ -24,9 +24,12 @@ const port = 3000;
 const REGION = "us-east-1";
 const ASU_ID = "1229855837"; // Replace with your ASU ID
 const sqs = new SQSClient({ region: REGION });
-const AMI_ID = "ami-093f92df1f9a9e364"; // Replace with your AMI ID
+const AMI_ID = "ami-0a047f27c26141696"; // Replace with your AMI ID
 const MAX_INSTANCES = 20;
 const MIN_INSTANCES = 1;
+
+const userDataScript = `#!/bin/bash
+    sudo docker run -d -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY} -e AWS_REGION=${process.env.AWS_REGION} abhimonk1998/app-tier:latest`;
 
 // Queue URLs
 // https://sqs.us-east-1.amazonaws.com/137068238639/1229855837-req-queue.fifo
@@ -93,6 +96,7 @@ async function launchAppTierInstance(instanceIndex: number): Promise<void> {
           Tags: [{ Key: "Name", Value: `app-tier-instance-${instanceIndex}` }],
         },
       ],
+      UserData: Buffer.from(userDataScript).toString("base64"),
     });
     await ec2.send(command);
     console.log(
