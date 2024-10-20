@@ -179,9 +179,12 @@ async function pollResponseQueue() {
       if (response.Messages) {
         for (const message of response.Messages) {
           const responseBody = JSON.parse(message.Body || "{}");
-          const { requestId, classificationResult } = responseBody;
+          // const { requestId, classificationResult } = responseBody;
           console.log("Got Message");
+          const requestId = responseBody.fileName;
+          const classificationResult = responseBody.classificationResult;
           // Check if we have a pending request with this requestId
+          console.log(requestId);
           const resolve = pendingRequests.get(requestId);
           if (resolve) {
             console.log("Message Resolving");
