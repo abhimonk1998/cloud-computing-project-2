@@ -166,12 +166,13 @@ function sleep(ms: number): Promise<void> {
 
 async function pollResponseQueue() {
   while (true) {
+    console.log("Polling for messages");
     try {
       const response = await sqs.send(
         new ReceiveMessageCommand({
           QueueUrl: RESPONSE_QUEUE_URL,
           MaxNumberOfMessages: 10,
-          WaitTimeSeconds: 20, // Long polling
+          WaitTimeSeconds: 10, // Long polling
         })
       );
 
@@ -179,14 +180,15 @@ async function pollResponseQueue() {
         for (const message of response.Messages) {
           const responseBody = JSON.parse(message.Body || "{}");
           const { requestId, classificationResult } = responseBody;
-
+          console.log("Got Message");
           // Check if we have a pending request with this requestId
           const resolve = pendingRequests.get(requestId);
           if (resolve) {
+            console.log("Message Resolving");
             // Resolve the Promise to unblock the request handler
             resolve(classificationResult);
             pendingRequests.delete(requestId);
-
+            console.log("Message Resolved");
             // Delete the message from the queue
             await sqs.send(
               new DeleteMessageCommand({
@@ -213,7 +215,7 @@ app.post(
       res.status(400).send("No file uploaded.");
       return;
     }
-    const RESPONSE_TIMEOUT = 80000;
+    const RESPONSE_TIMEOUT = 200000;
     const fileName = file.originalname;
     const filePath = file.path;
     const requestId = fileName;
