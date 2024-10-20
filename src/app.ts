@@ -24,7 +24,7 @@ const port = 3000;
 const REGION = "us-east-1";
 const ASU_ID = "1229855837"; // Replace with your ASU ID
 const sqs = new SQSClient({ region: REGION });
-const AMI_ID = "ami-06f7aca51d68dc438";
+const AMI_ID = "ami-0b50330b47a5c0884";
 // "ami-06f7aca51d68dc438"; // Replace with your AMI ID
 const MAX_INSTANCES = 20;
 const MIN_INSTANCES = 0;
@@ -33,13 +33,11 @@ const userDataScript = `#!/bin/bash
     sudo docker run -d -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY} -e AWS_REGION=${process.env.AWS_REGION} abhimonk1998/app-tier:latest`;
 
 // Queue URLs
-// https://sqs.us-east-1.amazonaws.com/137068238639/1229855837-req-queue.fifo
-// const REQUEST_QUEUE_URL = `https://sqs.${REGION}.amazonaws.com/${ASU_ID}/${ASU_ID}-req-queue`;
-// const RESPONSE_QUEUE_URL = `https://sqs.${REGION}.amazonaws.com/${ASU_ID}/${ASU_ID}-resp-queue`;
+const REQUEST_QUEUE_URL = `https://sqs.${REGION}.amazonaws.com/137068238639/${ASU_ID}-req-queue`;
+const RESPONSE_QUEUE_URL = `https://sqs.${REGION}.amazonaws.com/137068238639/${ASU_ID}-resp-queue`;
 
-const REQUEST_QUEUE_URL = `https://sqs.${REGION}.amazonaws.com/137068238639/${ASU_ID}-req-queue.fifo`;
-const RESPONSE_QUEUE_URL = `https://sqs.${REGION}.amazonaws.com/137068238639/${ASU_ID}-resp-queue.fifo`;
-
+// https://sqs.us-east-1.amazonaws.com/137068238639/1229855837-req-queue
+// https://sqs.us-east-1.amazonaws.com/137068238639/1229855837-resp-queue
 // Set up multer for handling file uploads
 const upload = multer({ dest: "uploads/" });
 
@@ -235,8 +233,6 @@ app.post(
           fileName,
           fileData: fileBase64,
         }),
-        MessageGroupId: fileName, // REQUIRED for FIFO queue
-        MessageDeduplicationId: fileName, // Ensures message uniqueness for deduplication
       };
       await sqs.send(new SendMessageCommand(message));
       console.log("Message sent to queue");
