@@ -24,7 +24,8 @@ const port = 3000;
 const REGION = "us-east-1";
 const ASU_ID = "1229855837"; // Replace with your ASU ID
 const sqs = new SQSClient({ region: REGION });
-const AMI_ID = "ami-0a047f27c26141696"; // Replace with your AMI ID
+const AMI_ID = "ami-06f7aca51d68dc438";
+// "ami-06f7aca51d68dc438"; // Replace with your AMI ID
 const MAX_INSTANCES = 20;
 const MIN_INSTANCES = 0;
 
