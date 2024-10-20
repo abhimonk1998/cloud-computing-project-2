@@ -196,7 +196,7 @@ app.post(
           new ReceiveMessageCommand({
             QueueUrl: RESPONSE_QUEUE_URL,
             MaxNumberOfMessages: 10,
-            WaitTimeSeconds: 60,
+            WaitTimeSeconds: 20,
           })
         );
 
