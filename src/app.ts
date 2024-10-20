@@ -218,7 +218,7 @@ app.post(
       res.status(400).send("No file uploaded.");
       return;
     }
-    const RESPONSE_TIMEOUT = 200000;
+    const RESPONSE_TIMEOUT = 3000000;
     const fileName = file.originalname;
     const filePath = file.path;
     const requestId = fileName;
