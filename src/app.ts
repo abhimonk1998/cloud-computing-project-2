@@ -187,12 +187,12 @@ app.post(
       // Poll the Response Queue for the classification result
       let result: string | undefined;
       const maxRetries = 100;
-      for (let i = 0; i < maxRetries; i++) {
+      while (true) {
         const response = await sqs.send(
           new ReceiveMessageCommand({
             QueueUrl: RESPONSE_QUEUE_URL,
-            MaxNumberOfMessages: 1,
-            WaitTimeSeconds: 20,
+            MaxNumberOfMessages: 10,
+            WaitTimeSeconds: 1,
           })
         );
 
