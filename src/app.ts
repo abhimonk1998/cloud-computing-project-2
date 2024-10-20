@@ -235,7 +235,7 @@ app.post(
           fileName,
           fileData: fileBase64,
         }),
-        MessageGroupId: "app-tier-group", // REQUIRED for FIFO queue
+        MessageGroupId: fileName, // REQUIRED for FIFO queue
         MessageDeduplicationId: fileName, // Ensures message uniqueness for deduplication
       };
       await sqs.send(new SendMessageCommand(message));
