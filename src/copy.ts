@@ -163,46 +163,6 @@ async function scaleAppTier(): Promise<void> {
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
-async function pollResponseQueue() {
-  while (true) {
-    try {
-      const response = await sqs.send(
-        new ReceiveMessageCommand({
-          QueueUrl: RESPONSE_QUEUE_URL,
-          MaxNumberOfMessages: 10,
-          WaitTimeSeconds: 20, // Long polling
-        })
-      );
-
-      if (response.Messages) {
-        for (const message of response.Messages) {
-          const responseBody = JSON.parse(message.Body || "{}");
-          const { requestId, classificationResult } = responseBody;
-
-          // Check if we have a pending request with this requestId
-          const resolve = pendingRequests.get(requestId);
-          if (resolve) {
-            // Resolve the Promise to unblock the request handler
-            resolve(classificationResult);
-            pendingRequests.delete(requestId);
-
-            // Delete the message from the queue
-            await sqs.send(
-              new DeleteMessageCommand({
-                QueueUrl: RESPONSE_QUEUE_URL,
-                ReceiptHandle: message.ReceiptHandle,
-              })
-            );
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error polling response queue:", error);
-    }
-  }
-}
-
 // Endpoint to accept images from users
 app.post(
   "/",
@@ -213,10 +173,10 @@ app.post(
       res.status(400).send("No file uploaded.");
       return;
     }
-    const RESPONSE_TIMEOUT = 80000;
+
     const fileName = file.originalname;
     const filePath = file.path;
-    const requestId = fileName;
+
     try {
       // Read the image and encode it as base64
       const fileBuffer = fs.readFileSync(filePath);
@@ -235,16 +195,36 @@ app.post(
       await sqs.send(new SendMessageCommand(message));
       console.log("Message sent to queue");
       // Poll the Response Queue for the classification result
+      let result: string | undefined;
+      const maxRetries = 100;
+      while (true) {
+        await sleep(10000);
+        const response = await sqs.send(
+          new ReceiveMessageCommand({
+            QueueUrl: RESPONSE_QUEUE_URL,
+            MaxNumberOfMessages: 10,
+            WaitTimeSeconds: 20,
+          })
+        );
 
-      const result = await new Promise((resolve, reject) => {
-        pendingRequests.set(requestId, resolve);
+        if (response.Messages && response.Messages.length > 0) {
+          const receivedMessage = response.Messages[0];
+          const responseBody = JSON.parse(receivedMessage.Body || "{}");
 
-        // Optional: Set a timeout to reject the Promise if no response arrives
-        setTimeout(() => {
-          pendingRequests.delete(requestId);
-          reject(new Error("Timeout waiting for response"));
-        }, RESPONSE_TIMEOUT);
-      });
+          if (responseBody.fileName === fileName) {
+            result = responseBody.classificationResult;
+
+            // Delete the message from the Response Queue
+            await sqs.send(
+              new DeleteMessageCommand({
+                QueueUrl: RESPONSE_QUEUE_URL,
+                ReceiptHandle: receivedMessage.ReceiptHandle!,
+              })
+            );
+            break;
+          }
+        }
+      }
 
       // Send the response back to the user
       if (result) {
@@ -267,6 +247,4 @@ app.post(
 app.listen(port, () => {
   console.log(`Web tier listening at http://localhost:${port}`);
   setInterval(scaleAppTier, 5000);
-  // Start the response queue poller
-  pollResponseQueue();
 });
