@@ -157,6 +157,10 @@ async function scaleAppTier(): Promise<void> {
     console.error("Error during autoscaling:", error);
   }
 }
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 // Endpoint to accept images from users
 app.post(
   "/",
@@ -192,6 +196,7 @@ app.post(
       let result: string | undefined;
       const maxRetries = 100;
       while (true) {
+        await sleep(10000);
         const response = await sqs.send(
           new ReceiveMessageCommand({
             QueueUrl: RESPONSE_QUEUE_URL,
