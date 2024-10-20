@@ -204,6 +204,7 @@ async function pollResponseQueue() {
     } catch (error) {
       console.error("Error polling response queue:", error);
     }
+    await sleep(1000);
   }
 }
 
