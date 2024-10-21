@@ -130,7 +130,7 @@ async function scaleAppTier(): Promise<void> {
       `Queue length: ${queueLength}, Current instance count: ${currentInstanceCount}`
     );
 
-    if (queueLength > 5 && currentInstanceCount < MAX_INSTANCES) {
+    if (queueLength > 0 && currentInstanceCount < MAX_INSTANCES) {
       // Launch a new App Tier instance if the queue length exceeds 5 and max limit is not reached
       await launchAppTierInstance(currentInstanceCount + 1);
     } else if (queueLength === 0 && currentInstanceCount > MIN_INSTANCES) {
@@ -269,7 +269,7 @@ app.post(
 // Start the web server
 app.listen(port, () => {
   console.log(`Web tier listening at http://localhost:${port}`);
-  setInterval(scaleAppTier, 5000);
+  setInterval(scaleAppTier, 1000);
   // Start the response queue poller
   pollResponseQueue();
 });
