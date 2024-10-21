@@ -171,7 +171,7 @@ async function pollResponseQueue() {
         new ReceiveMessageCommand({
           QueueUrl: RESPONSE_QUEUE_URL,
           MaxNumberOfMessages: 10,
-          WaitTimeSeconds: 30, // Long polling
+          WaitTimeSeconds: 20, // Long polling
         })
       );
 
@@ -204,7 +204,6 @@ async function pollResponseQueue() {
     } catch (error) {
       console.error("Error polling response queue:", error);
     }
-    await sleep(5);
   }
 }
 
