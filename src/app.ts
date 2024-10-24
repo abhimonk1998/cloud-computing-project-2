@@ -26,7 +26,7 @@ const ASU_ID = "1229855837"; // Replace with your ASU ID
 const sqs = new SQSClient({ region: REGION });
 const AMI_ID = "ami-0b50330b47a5c0884";
 // "ami-06f7aca51d68dc438"; // Replace with your AMI ID
-const MAX_INSTANCES = 20;
+const MAX_INSTANCES = 30;
 const MIN_INSTANCES = 0;
 
 const userDataScript = `#!/bin/bash
