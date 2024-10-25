@@ -135,6 +135,7 @@ async function scaleAppTier(): Promise<void> {
       await launchAppTierInstance(currentInstanceCount + 1);
     } else if (queueLength === 0 && currentInstanceCount > MIN_INSTANCES) {
       // Terminate an App Tier instance if there are no messages in the queue and more than minimum instances
+      await sleep(20000);
       const command = new DescribeInstancesCommand({
         Filters: [
           {
